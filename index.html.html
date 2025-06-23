@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mapa Interativo</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  
+  <style>
+    #map { height: 600px; }
+  </style>
+</head>
+<body>
+
+<h3>Mapa com Filtros</h3>
+
+<select id="filtro-natureza" onchange="aplicarFiltro()">
+  <option value="todos">Todos</option>
+  <option value="Deslizamento">Deslizamento</option>
+  <option value="Inundação">Inundação</option>
+</select>
+
+<div id="map"></div>
+
+<script>
+  var map = L.map('map').setView([-25.43, -49.27], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  var geojsonLayer;
+  var dados;
+
+  fetch('ocorrencias_2009_01.geojson')
+    .then(res => res.json())
+    .then(data => {
+      dados = data;
+      geojsonLayer = L.geoJSON(dados).addTo(map);
+    });
+
+  function aplicarFiltro() {
+    var filtro = document.getElementById('filtro-natureza').value;
+    map.removeLayer(geojsonLayer);
+    geojsonLayer = L.geoJSON(dados, {
+      filter: function(feature) {
+        if (filtro === 'todos') return true;
+        return feature.properties.NATUREZA === filtro;
+      }
+    }).addTo(map);
+  }
+</script>
+
+</body>
+</html>
